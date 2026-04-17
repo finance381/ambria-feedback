@@ -24,6 +24,7 @@ export function useAuth() {
   }, []);
 
   var logout = useCallback(function () {
+    try { sessionStorage.removeItem('ambria.venues'); } catch (e) {}
     saveSession(null);
   }, [saveSession]);
 

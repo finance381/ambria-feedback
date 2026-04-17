@@ -17,8 +17,15 @@ export default function GuestForm({ session }) {
   useKioskLock(true);
 
   var [step, setStep] = useState('details'); // details | ratings | thankyou
-  var [venues, setVenues] = useState([]);
-  var [loadingVenues, setLoadingVenues] = useState(true);
+  var [venues, setVenues] = useState(function () {
+    try {
+      var raw = sessionStorage.getItem('ambria.venues');
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  });
+  var [loadingVenues, setLoadingVenues] = useState(function () {
+    try { return !sessionStorage.getItem('ambria.venues'); } catch (e) { return true; }
+  });
   var [error, setError] = useState('');
   var [submitting, setSubmitting] = useState(false);
 
@@ -36,8 +43,15 @@ export default function GuestForm({ session }) {
   });
 
   useEffect(function () {
+    // Already cached from login bundle? skip the fetch
+    if (venues.length > 0) {
+      setLoadingVenues(false);
+      return;
+    }
     listVenues(session.token).then(function (res) {
-      setVenues(res.venues || []);
+      var list = res.venues || [];
+      setVenues(list);
+      try { sessionStorage.setItem('ambria.venues', JSON.stringify(list)); } catch (e) {}
       setLoadingVenues(false);
     }).catch(function (e) {
       setError('Could not load venues: ' + e.message);

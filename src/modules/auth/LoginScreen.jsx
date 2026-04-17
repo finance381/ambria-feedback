@@ -23,6 +23,10 @@ export default function LoginScreen({ onLogin }) {
         username: data.username,
         displayName: data.displayName,
       };
+      // Cache venues bundled with sales login response
+      if (data.venues) {
+        try { sessionStorage.setItem('ambria.venues', JSON.stringify(data.venues)); } catch (e) {}
+      }
       onLogin(session);
       navigate(data.role === 'admin' ? '/admin' : '/capture');
     } catch (e) {
