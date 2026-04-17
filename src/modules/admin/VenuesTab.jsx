@@ -16,7 +16,7 @@ export default function VenuesTab({ session }) {
     setLoading(true);
     setError('');
     try {
-      var res = await listAllVenues(session.token);
+      var res = await listAllVenues();
       setVenues(res.venues || []);
     } catch (e) {
       setError(e.message || 'Failed to load');
@@ -30,7 +30,7 @@ export default function VenuesTab({ session }) {
     setAdding(true);
     setError('');
     try {
-      await addVenue(session.token, n);
+      await addVenue(n);
       setNewName('');
       await load();
     } catch (e) {
@@ -43,7 +43,7 @@ export default function VenuesTab({ session }) {
     setBusy(v.name);
     setError('');
     try {
-      await updateVenue(session.token, v.name, '', !v.active);
+      await updateVenue(v.name, '', !v.active);
       await load();
     } catch (e) {
       setError(e.message);
@@ -61,7 +61,7 @@ export default function VenuesTab({ session }) {
     setBusy(editing.oldName);
     setError('');
     try {
-      await updateVenue(session.token, editing.oldName, n);
+      await updateVenue(editing.oldName, n);
       setEditing(null);
       await load();
     } catch (e) {

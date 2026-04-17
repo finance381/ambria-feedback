@@ -42,7 +42,7 @@ export default function ReviewsTab({ session }) {
     setLoading(true);
     setError('');
     try {
-      var res = await listReviews(session.token);
+      var res = await listReviews();
       setReviews(res.reviews || []);
     } catch (e) {
       setError(e.message || 'Failed to load reviews');

@@ -7,7 +7,7 @@ import GuestForm from './modules/sales/GuestForm';
 import AdminShell from './modules/admin/AdminShell';
 
 export default function App() {
-  var { session, saveSession, logout } = useAuth();
+  var { session, saveSession, logout, loading } = useAuth();
   var route = useHashRoute();
 
   // Route guard — redirect based on auth + role
@@ -35,10 +35,13 @@ export default function App() {
     }
   }, [session, route]);
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     navigate('/login');
   }
+
+  // Avoid flashing login on page refresh while auth state hydrates
+  if (loading) return null;
 
   // Render by route
   if (!session || route === '/login' || route === '/') {

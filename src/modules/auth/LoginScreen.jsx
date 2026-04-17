@@ -17,8 +17,7 @@ export default function LoginScreen({ onLogin }) {
     setLoading(true);
     try {
       var data = await login(username.trim(), password);
-      var session = {
-        token: data.token,
+      var profile = {
         role: data.role,
         username: data.username,
         displayName: data.displayName,
@@ -27,7 +26,7 @@ export default function LoginScreen({ onLogin }) {
       if (data.venues) {
         try { sessionStorage.setItem('ambria.venues', JSON.stringify(data.venues)); } catch (e) {}
       }
-      onLogin(session);
+      onLogin(profile);
       navigate(data.role === 'admin' ? '/admin' : '/capture');
     } catch (e) {
       setError(e.message || 'Login failed');

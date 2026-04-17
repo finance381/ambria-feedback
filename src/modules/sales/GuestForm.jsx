@@ -48,7 +48,7 @@ export default function GuestForm({ session }) {
       setLoadingVenues(false);
       return;
     }
-    listVenues(session.token).then(function (res) {
+    listVenues().then(function (res) {
       var list = res.venues || [];
       setVenues(list);
       try { sessionStorage.setItem('ambria.venues', JSON.stringify(list)); } catch (e) {}
@@ -57,7 +57,7 @@ export default function GuestForm({ session }) {
       setError('Could not load venues: ' + e.message);
       setLoadingVenues(false);
     });
-  }, [session.token]);
+  }, []);
 
   // Auto-return to capture screen after thank-you
   useEffect(function () {
@@ -95,7 +95,7 @@ export default function GuestForm({ session }) {
     setError('');
     setSubmitting(true);
     try {
-      await submitReview(session.token, form);
+      await submitReview(form);
       setStep('thankyou');
     } catch (e) {
       setError(e.message || 'Submission failed');

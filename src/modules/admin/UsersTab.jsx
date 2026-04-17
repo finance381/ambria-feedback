@@ -21,7 +21,7 @@ export default function UsersTab({ session }) {
     setLoading(true);
     setError('');
     try {
-      var res = await listUsers(session.token);
+      var res = await listUsers();
       setUsers(res.users || []);
     } catch (e) {
       setError(e.message || 'Failed to load');
@@ -37,7 +37,7 @@ export default function UsersTab({ session }) {
     setAdding(true);
     setError('');
     try {
-      await addUser(session.token, newUser);
+      await addUser(newUser);
       setNewUser({ username: '', displayName: '', role: 'sales', password: '' });
       setShowAdd(false);
       await load();
@@ -52,7 +52,7 @@ export default function UsersTab({ session }) {
     setBusy(editing.username);
     setError('');
     try {
-      await updateUser(session.token, {
+      await updateUser({
         username: editing.username,
         displayName: editing.displayName,
         role: editing.role,
@@ -74,7 +74,7 @@ export default function UsersTab({ session }) {
     setBusy(u.username);
     setError('');
     try {
-      await updateUser(session.token, { username: u.username, active: !u.active });
+      await updateUser({ username: u.username, active: !u.active });
       await load();
     } catch (e) {
       setError(e.message);
@@ -87,7 +87,7 @@ export default function UsersTab({ session }) {
     setBusy(resetFor);
     setError('');
     try {
-      await resetPassword(session.token, resetFor, resetPwd);
+      await resetPassword(resetFor, resetPwd);
       setResetFor(null);
       setResetPwd('');
     } catch (e) {
