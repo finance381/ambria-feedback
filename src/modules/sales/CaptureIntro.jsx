@@ -2,7 +2,7 @@ import { navigate } from '../../lib/router';
 
 export default function CaptureIntro({ session, onLogout }) {
   return (
-    <div className="fb-root">
+    <div className="fb-capture-root">
       <div className="fb-capture-corner">
         <button className="fb-btn-ghost" onClick={onLogout}>Log Out</button>
       </div>
