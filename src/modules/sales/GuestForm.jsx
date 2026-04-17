@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { submitReview, listVenues } from '../../lib/api';
 import { navigate } from '../../lib/router';
 import { useKioskLock } from '../../hooks/useKioskLock';
-
-var RATING_OPTIONS = ['Excellent', 'Good', 'Average', 'Poor'];
+import StarRating from '../../components/StarRating';
 
 function todayISO() {
   var d = new Date();
@@ -35,12 +34,13 @@ export default function GuestForm({ session }) {
     guestEmail: '',
     eventDate: todayISO(),
     functionLocation: '',
-    food: 'Excellent',
-    beverage: 'Excellent',
-    service: 'Excellent',
-    overall: 'Excellent',
+    food: 0,
+    beverage: 0,
+    service: 0,
+    overall: 0,
     remarks: '',
   });
+  var [showCancel, setShowCancel] = useState(false);
 
   useEffect(function () {
     // Already cached from login bundle? skip the fetch
@@ -88,6 +88,10 @@ export default function GuestForm({ session }) {
   }
 
   async function handleSubmit() {
+    if (!form.food || !form.beverage || !form.service || !form.overall) {
+      setError('Please rate all four categories');
+      return;
+    }
     setError('');
     setSubmitting(true);
     try {
@@ -99,10 +103,42 @@ export default function GuestForm({ session }) {
     setSubmitting(false);
   }
 
+  function handleCancelConfirmed() {
+    setShowCancel(false);
+    navigate('/capture');
+  }
+
   var stepIndex = step === 'details' ? 0 : step === 'ratings' ? 1 : 2;
 
   return (
     <div className="fb-root">
+      {step !== 'thankyou' && (
+        <div className="fb-capture-corner">
+          <button className="fb-btn-ghost" onClick={function () { setShowCancel(true); }}>
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {showCancel && (
+        <div className="fb-modal-backdrop" onClick={function () { setShowCancel(false); }}>
+          <div className="fb-modal" onClick={function (e) { e.stopPropagation(); }}>
+            <h3 className="fb-heading" style={{ marginBottom: '0.5rem' }}>Discard this review?</h3>
+            <p className="fb-muted" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              All entered details will be lost
+            </p>
+            <div className="fb-inline-row" style={{ justifyContent: 'center' }}>
+              <button className="fb-btn-ghost" onClick={function () { setShowCancel(false); }}>
+                Keep going
+              </button>
+              <button className="fb-btn fb-btn-inline fb-btn-danger" onClick={handleCancelConfirmed}>
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="fb-card">
         <div className="fb-logo">
           <span className="fb-logo-main">Ambria</span>
@@ -229,23 +265,15 @@ function RatingsStep({ form, set, error, submitting, onSubmit, onBack }) {
   return (
     <>
       <h2 className="fb-heading">Share Your Experience</h2>
-      <p className="fb-subheading">Your feedback is invaluable</p>
+      <p className="fb-subheading">Tap to rate out of five</p>
       <div className="fb-divider"><div className="fb-divider-line" /><div className="fb-divider-diamond" /><div className="fb-divider-line" /></div>
 
-      <div className="fb-rating-grid">
+      <div style={{ marginBottom: '1.5rem' }}>
         {fields.map(function (f) {
           return (
-            <div className="fb-field" key={f.key} style={{ marginBottom: 0 }}>
+            <div className="fb-field" key={f.key} style={{ marginBottom: '1.1rem' }}>
               <label className="fb-label">{f.label}</label>
-              <div className="fb-select-wrap">
-                <select
-                  className="fb-select"
-                  value={form[f.key]}
-                  onChange={function (e) { set(f.key, e.target.value); }}
-                >
-                  {RATING_OPTIONS.map(function (o) { return <option key={o}>{o}</option>; })}
-                </select>
-              </div>
+              <StarRating value={form[f.key]} onChange={function (v) { set(f.key, v); }} />
             </div>
           );
         })}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listReviews } from '../../lib/api';
+import { StarDisplay } from '../../components/StarRating';
 
 function formatTimestamp(iso) {
   if (!iso) return '';
@@ -30,6 +31,7 @@ export default function ReviewsTab({ session }) {
   var [filterVenue, setFilterVenue] = useState('');
   var [filterFrom, setFilterFrom] = useState('');
   var [filterTo, setFilterTo] = useState('');
+  var [filterMinRating, setFilterMinRating] = useState('');
   var [search, setSearch] = useState('');
 
   useEffect(function () {
@@ -84,9 +86,14 @@ export default function ReviewsTab({ session }) {
         ).toLowerCase();
         if (hay.indexOf(q) === -1) return false;
       }
+      if (filterMinRating) {
+        var minR = Number(filterMinRating);
+        var overall = Number(r.overall) || 0;
+        if (overall < minR) return false;
+      }
       return true;
     });
-  }, [reviews, filterSales, filterVenue, filterFrom, filterTo, search]);
+  }, [reviews, filterSales, filterVenue, filterFrom, filterTo, filterMinRating, search]);
 
   function exportCSV() {
     var headers = ['Timestamp', 'Sales User', 'Guest Name', 'Mobile', 'Email', 'Event Date', 'Function Location', 'Food', 'Beverage', 'Service', 'Overall', 'Remarks'];
@@ -132,6 +139,7 @@ export default function ReviewsTab({ session }) {
     setFilterVenue('');
     setFilterFrom('');
     setFilterTo('');
+    setFilterMinRating('');
     setSearch('');
   }
 
@@ -165,6 +173,21 @@ export default function ReviewsTab({ session }) {
           <div className="fb-field">
             <label className="fb-label">To</label>
             <input className="fb-input" type="date" value={filterTo} onChange={function (e) { setFilterTo(e.target.value); }} />
+          </div>
+          <div className="fb-field">
+            <label className="fb-label">Min Overall</label>
+            <div className="fb-select-wrap">
+              <select className="fb-select" value={filterMinRating} onChange={function (e) { setFilterMinRating(e.target.value); }}>
+                <option value="">Any</option>
+                <option value="5">5 stars</option>
+                <option value="4.5">4.5 +</option>
+                <option value="4">4 +</option>
+                <option value="3.5">3.5 +</option>
+                <option value="3">3 +</option>
+                <option value="2">2 +</option>
+                <option value="1">1 +</option>
+              </select>
+            </div>
           </div>
           <div className="fb-field">
             <label className="fb-label">Search</label>
@@ -220,10 +243,10 @@ export default function ReviewsTab({ session }) {
                     <td>{r.guestMobile}</td>
                     <td>{formatEventDate(r.eventDate)}</td>
                     <td>{r.functionLocation}</td>
-                    <td>{r.food}</td>
-                    <td>{r.beverage}</td>
-                    <td>{r.service}</td>
-                    <td>{r.overall}</td>
+                    <td><StarDisplay value={r.food} /></td>
+                    <td><StarDisplay value={r.beverage} /></td>
+                    <td><StarDisplay value={r.service} /></td>
+                    <td><StarDisplay value={r.overall} /></td>
                     <td style={{ whiteSpace: 'normal', maxWidth: '280px' }}>{r.remarks}</td>
                   </tr>
                 );
