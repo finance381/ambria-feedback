@@ -239,6 +239,116 @@ input, select, textarea { font-family: inherit; }
 .fb-thankyou-text { font-size: 0.8rem; font-weight: 300; color: rgba(232, 220, 200, 0.45); letter-spacing: 0.1em; line-height: 1.8; }
 
 /* ============================================================
+   STAFF LOGIN SCREEN (light)
+   ============================================================ */
+
+.fb-login-root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #faf7f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.fb-login-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(184, 146, 61, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 20%, rgba(184, 146, 61, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.fb-login-card {
+  background: #ffffff;
+  border: 1px solid #e8e2d5;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 440px;
+  padding: 3rem 2.5rem;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 4px 24px rgba(42, 37, 32, 0.04);
+}
+
+.fb-login-card .fb-logo-main {
+  color: #b8923d;
+}
+
+.fb-login-card .fb-logo-sub {
+  color: #a89f92;
+}
+
+.fb-login-card .fb-divider-line {
+  background: linear-gradient(to right, transparent, #d4ccbc, transparent);
+}
+
+.fb-login-card .fb-divider-diamond {
+  background: #b8923d;
+}
+
+.fb-login-card .fb-heading {
+  color: #2a2520;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: 0.02em;
+}
+
+.fb-login-card .fb-subheading {
+  color: #8a7f71;
+  font-weight: 500;
+}
+
+.fb-login-card .fb-label {
+  color: #6b6258;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-size: 0.65rem;
+}
+
+.fb-login-card .fb-input {
+  background: #ffffff;
+  border: 1px solid #d4ccbc;
+  color: #2a2520;
+  border-radius: 3px;
+}
+.fb-login-card .fb-input:focus {
+  border-color: #b8923d;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(184, 146, 61, 0.1);
+}
+.fb-login-card .fb-input::placeholder { color: #a89f92; }
+
+.fb-login-card .fb-btn {
+  background: #b8923d;
+  border: 1px solid #b8923d;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+}
+.fb-login-card .fb-btn:hover {
+  background: #9a7a2e;
+  border-color: #9a7a2e;
+}
+
+.fb-login-card .fb-error {
+  color: #9a4530;
+  background: #fbf0eb;
+  border: 1px solid #e5c2b5;
+  border-radius: 3px;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  letter-spacing: normal;
+  font-size: 0.78rem;
+}
+
+/* ============================================================
    STAFF LIGHT THEME — admin shell + sales capture
    ============================================================ */
 

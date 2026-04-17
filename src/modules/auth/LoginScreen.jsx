@@ -39,8 +39,8 @@ export default function LoginScreen({ onLogin }) {
   }
 
   return (
-    <div className="fb-root">
-      <div className="fb-card">
+    <div className="fb-login-root">
+      <div className="fb-login-card">
         <div className="fb-logo">
           <span className="fb-logo-main">Ambria</span>
           <span className="fb-logo-sub">Cuisines &nbsp;·&nbsp; Staff Access</span>
