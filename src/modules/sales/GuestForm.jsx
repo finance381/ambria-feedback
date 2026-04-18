@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { submitReview, listVenues, checkDuplicateGuest } from '../../lib/api';
+import { submitReview, listVenues, listActiveSalesPeople, checkDuplicateGuest } from '../../lib/api';
 import { navigate } from '../../lib/router';
 import { useKioskLock } from '../../hooks/useKioskLock';
 import StarRating from '../../components/StarRating';
