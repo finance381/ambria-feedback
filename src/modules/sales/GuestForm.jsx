@@ -239,6 +239,21 @@ export default function GuestForm() {
 function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearch, setSalesSearch, salesOpen, setSalesOpen, error, onNext }) {
   var sigCanvasRef = useRef(null);
   var isDrawingRef = useRef(false);
+  var dropdownRef = useRef(null);
+
+  useEffect(function () {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setSalesOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return function () {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   var filteredSales = salesPeople.filter(function (p) {
     if (!salesSearch.trim()) return true;
@@ -251,9 +266,13 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
     setSalesOpen(false);
   }
 
+  var canvasInitRef = useRef(false);
+
   function initCanvas(canvas) {
     if (!canvas) return;
     sigCanvasRef.current = canvas;
+    if (canvasInitRef.current) return;
+    canvasInitRef.current = true;
     var ctx = canvas.getContext('2d');
     var rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * 2;
@@ -301,7 +320,7 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
     var canvas = sigCanvasRef.current;
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
     set('signature', '');
   }
 
@@ -311,7 +330,7 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
       <p className="fb-subheading">A warm welcome to you</p>
       <div className="fb-divider"><div className="fb-divider-line" /><div className="fb-divider-diamond" /><div className="fb-divider-line" /></div>
 
-      <div className="fb-field" style={{ position: 'relative' }}>
+      <div className="fb-field" style={{ position: 'relative' }} ref={dropdownRef}>
         <label className="fb-label">Sales Person</label>
         <input
           className="fb-input"
