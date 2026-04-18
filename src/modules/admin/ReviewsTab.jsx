@@ -33,9 +33,29 @@ export default function ReviewsTab({ session }) {
   var [filterTo, setFilterTo] = useState('');
   var [filterMinRating, setFilterMinRating] = useState('');
   var [search, setSearch] = useState('');
+  var [lastRefresh, setLastRefresh] = useState(null);
+  var [showExport, setShowExport] = useState(false);
+  var [exportCols, setExportCols] = useState({
+    timestamp: true,
+    salesUser: true,
+    guestName: true,
+    guestMobile: true,
+    guestEmail: true,
+    eventDate: true,
+    venue: true,
+    food: true,
+    beverage: true,
+    service: true,
+    overall: true,
+    remarks: true,
+  });
 
   useEffect(function () {
     loadReviews();
+    var interval = setInterval(function () {
+      loadReviews();
+    }, 30000);
+    return function () { clearInterval(interval); };
   }, []);
 
   async function loadReviews() {
@@ -44,6 +64,7 @@ export default function ReviewsTab({ session }) {
     try {
       var res = await listReviews();
       setReviews(res.reviews || []);
+      setLastRefresh(new Date());
     } catch (e) {
       setError(e.message || 'Failed to load reviews');
     }
@@ -95,23 +116,32 @@ export default function ReviewsTab({ session }) {
     });
   }, [reviews, filterSales, filterVenue, filterFrom, filterTo, filterMinRating, search]);
 
+  var ALL_EXPORT_COLS = [
+    { key: 'timestamp', header: 'Timestamp', get: function (r) { return formatTimestamp(r.timestamp); } },
+    { key: 'salesUser', header: 'Sales User', get: function (r) { return r.salesUser || ''; } },
+    { key: 'guestName', header: 'Guest Name', get: function (r) { return r.guestName || ''; } },
+    { key: 'guestMobile', header: 'Mobile', get: function (r) { return r.guestMobile || ''; } },
+    { key: 'guestEmail', header: 'Email', get: function (r) { return r.guestEmail || ''; } },
+    { key: 'eventDate', header: 'Event Date', get: function (r) { return formatEventDate(r.eventDate); } },
+    { key: 'venue', header: 'Function Location', get: function (r) { return r.functionLocation || ''; } },
+    { key: 'food', header: 'Food', get: function (r) { return r.food || ''; } },
+    { key: 'beverage', header: 'Beverage', get: function (r) { return r.beverage || ''; } },
+    { key: 'service', header: 'Service', get: function (r) { return r.service || ''; } },
+    { key: 'overall', header: 'Overall', get: function (r) { return r.overall || ''; } },
+    { key: 'remarks', header: 'Remarks', get: function (r) { return r.remarks || ''; } },
+  ];
+
+  function toggleExportCol(key) {
+    setExportCols(Object.assign({}, exportCols, Object.fromEntries([[key, !exportCols[key]]])));
+  }
+
   function exportCSV() {
-    var headers = ['Timestamp', 'Sales User', 'Guest Name', 'Mobile', 'Email', 'Event Date', 'Function Location', 'Food', 'Beverage', 'Service', 'Overall', 'Remarks'];
+    var activeCols = ALL_EXPORT_COLS.filter(function (c) { return exportCols[c.key]; });
+    if (!activeCols.length) return;
+
+    var headers = activeCols.map(function (c) { return c.header; });
     var rows = filtered.map(function (r) {
-      return [
-        formatTimestamp(r.timestamp),
-        r.salesUser || '',
-        r.guestName || '',
-        r.guestMobile || '',
-        r.guestEmail || '',
-        formatEventDate(r.eventDate),
-        r.functionLocation || '',
-        r.food || '',
-        r.beverage || '',
-        r.service || '',
-        r.overall || '',
-        r.remarks || '',
-      ];
+      return activeCols.map(function (c) { return c.get(r); });
     });
     var csv = [headers].concat(rows).map(function (row) {
       return row.map(function (cell) {
@@ -132,6 +162,7 @@ export default function ReviewsTab({ session }) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setShowExport(false);
   }
 
   function clearFilters() {
@@ -197,16 +228,47 @@ export default function ReviewsTab({ session }) {
         <div className="fb-inline-row" style={{ justifyContent: 'space-between', marginTop: '0.5rem' }}>
           <span className="fb-muted">
             Showing {filtered.length} of {reviews.length}
+            {lastRefresh ? ' · Updated ' + lastRefresh.toLocaleTimeString() : ''}
           </span>
           <div className="fb-inline-row">
             <button className="fb-btn-ghost" onClick={clearFilters}>Clear</button>
             <button className="fb-btn-ghost" onClick={loadReviews} disabled={loading}>
               {loading ? 'Refreshing…' : 'Refresh'}
             </button>
-            <button className="fb-btn-ghost" onClick={exportCSV} disabled={!filtered.length}>Export CSV</button>
+            <button className="fb-btn-ghost" onClick={function () { setShowExport(true); }} disabled={!filtered.length}>Export CSV</button>
           </div>
         </div>
       </div>
+
+      {showExport && (
+        <div className="fb-modal-backdrop" onClick={function () { setShowExport(false); }}>
+          <div className="fb-modal" onClick={function (e) { e.stopPropagation(); }}>
+            <h3 className="fb-heading" style={{ marginBottom: '0.25rem' }}>Export Reviews</h3>
+            <p className="fb-muted" style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+              {filtered.length} reviews match current filters
+            </p>
+            <div className="fb-panel-title" style={{ marginBottom: '0.75rem' }}>Include Columns</div>
+            <div className="fb-export-grid">
+              {ALL_EXPORT_COLS.map(function (c) {
+                return (
+                  <label key={c.key} className="fb-export-check">
+                    <input
+                      type="checkbox"
+                      checked={exportCols[c.key]}
+                      onChange={function () { toggleExportCol(c.key); }}
+                    />
+                    <span>{c.header}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="fb-inline-row" style={{ justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <button className="fb-btn-ghost" onClick={function () { setShowExport(false); }}>Cancel</button>
+              <button className="fb-btn fb-btn-inline" onClick={exportCSV}>Download CSV</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="fb-panel">
         {error && <p className="fb-error" style={{ textAlign: 'left', marginBottom: '1rem' }}>{error}</p>}

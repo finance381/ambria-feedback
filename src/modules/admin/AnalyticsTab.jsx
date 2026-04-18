@@ -26,6 +26,10 @@ export default function AnalyticsTab({ session }) {
 
   useEffect(function () {
     loadData();
+    var interval = setInterval(function () {
+      loadData();
+    }, 30000);
+    return function () { clearInterval(interval); };
   }, []);
 
   async function loadData() {
