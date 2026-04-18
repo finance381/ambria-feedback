@@ -15,7 +15,7 @@ function todayISO() {
 export default function GuestForm() {
   useKioskLock(true);
 
-  var [step, setStep] = useState('details'); // details | ratings | thankyou
+  var [step, setStep] = useState('form'); // form | thankyou
   var [venues, setVenues] = useState(function () {
     try {
       var raw = sessionStorage.getItem('ambria.venues');
@@ -81,7 +81,12 @@ export default function GuestForm() {
     setForm(Object.assign({}, form, Object.fromEntries([[key, value]])));
   }
 
-  async function handleNext() {
+  function handleDuplicateContinue() {
+    setShowDuplicate(false);
+    doSubmit();
+  }
+
+  async function handleSubmit() {
     if (!form.salesPerson) {
       setError('Please select a sales person');
       return;
@@ -102,6 +107,10 @@ export default function GuestForm() {
       setError('Please select a function location');
       return;
     }
+    if (!form.food || !form.beverage || !form.service || !form.overall) {
+      setError('Please rate all four categories');
+      return;
+    }
     setError('');
     try {
       var isDup = await checkDuplicateGuest(form.guestMobile.trim());
@@ -110,24 +119,14 @@ export default function GuestForm() {
         return;
       }
     } catch (e) {
-      // Non-blocking — if RPC fails, let them proceed
       console.log('Duplicate check failed:', e.message);
     }
-    setStep('ratings');
+    doSubmit();
   }
 
-  function handleDuplicateContinue() {
-    setShowDuplicate(false);
-    setStep('ratings');
-  }
-
-  async function handleSubmit() {
-    if (!form.food || !form.beverage || !form.service || !form.overall) {
-      setError('Please rate all four categories');
-      return;
-    }
-    setError('');
+  async function doSubmit() {
     setSubmitting(true);
+    setError('');
     try {
       await submitReview(form);
       setStep('thankyou');
@@ -142,7 +141,7 @@ export default function GuestForm() {
     navigate('/capture');
   }
 
-  var stepIndex = step === 'details' ? 0 : step === 'ratings' ? 1 : 2;
+  var stepIndex = step === 'form' ? 0 : 1;
 
   return (
     <div className="fb-capture-root" style={{ flexDirection: 'column' }}>
@@ -198,13 +197,13 @@ export default function GuestForm() {
 
       <div className="fb-guest-card">
         <div className="fb-step-indicator">
-          {[0, 1, 2].map(function (i) {
+          {[0, 1].map(function (i) {
             return <div key={i} className={'fb-step-dot ' + (i <= stepIndex ? 'active' : '')} />;
           })}
         </div>
 
-        {step === 'details' && (
-          <DetailsStep
+        {step === 'form' && (
+          <FormStep
             form={form}
             set={set}
             venues={venues}
@@ -215,18 +214,8 @@ export default function GuestForm() {
             salesOpen={salesOpen}
             setSalesOpen={setSalesOpen}
             error={error}
-            onNext={handleNext}
-          />
-        )}
-
-        {step === 'ratings' && (
-          <RatingsStep
-            form={form}
-            set={set}
-            error={error}
             submitting={submitting}
             onSubmit={handleSubmit}
-            onBack={function () { setError(''); setStep('details'); }}
           />
         )}
 
@@ -236,10 +225,11 @@ export default function GuestForm() {
   );
 }
 
-function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearch, setSalesSearch, salesOpen, setSalesOpen, error, onNext }) {
+function FormStep({ form, set, venues, loadingVenues, salesPeople, salesSearch, setSalesSearch, salesOpen, setSalesOpen, error, submitting, onSubmit }) {
   var sigCanvasRef = useRef(null);
   var isDrawingRef = useRef(false);
   var dropdownRef = useRef(null);
+  var canvasInitRef = useRef(false);
 
   useEffect(function () {
     function handleClickOutside(e) {
@@ -265,8 +255,6 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
     setSalesSearch(name);
     setSalesOpen(false);
   }
-
-  var canvasInitRef = useRef(false);
 
   function initCanvas(canvas) {
     if (!canvas) return;
@@ -324,10 +312,17 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
     set('signature', '');
   }
 
+  var ratingFields = [
+    { key: 'food', label: 'Food' },
+    { key: 'beverage', label: 'Beverages' },
+    { key: 'service', label: 'Service' },
+    { key: 'overall', label: 'Overall' },
+  ];
+
   return (
     <>
-      <h2 className="fb-heading">Guest Details</h2>
-      <p className="fb-subheading">A warm welcome to you</p>
+      <h2 className="fb-heading">Guest Feedback</h2>
+      <p className="fb-subheading">We value your experience</p>
       <div className="fb-divider"><div className="fb-divider-line" /><div className="fb-divider-diamond" /><div className="fb-divider-line" /></div>
 
       <div className="fb-field" style={{ position: 'relative' }} ref={dropdownRef}>
@@ -446,29 +441,12 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
         </div>
       </div>
 
-      {error && <p className="fb-error">{error}</p>}
-
-      <button className="fb-btn" onClick={onNext}>Continue</button>
-    </>
-  );
-}
-
-function RatingsStep({ form, set, error, submitting, onSubmit, onBack }) {
-  var fields = [
-    { key: 'food', label: 'Food' },
-    { key: 'beverage', label: 'Beverages' },
-    { key: 'service', label: 'Service' },
-    { key: 'overall', label: 'Overall' },
-  ];
-
-  return (
-    <>
-      <h2 className="fb-heading">Share Your Experience</h2>
-      <p className="fb-subheading">Tap to rate out of five</p>
       <div className="fb-divider"><div className="fb-divider-line" /><div className="fb-divider-diamond" /><div className="fb-divider-line" /></div>
 
+      <p className="fb-subheading" style={{ marginBottom: '1.25rem' }}>Tap to rate out of five</p>
+
       <div style={{ marginBottom: '1.5rem' }}>
-        {fields.map(function (f) {
+        {ratingFields.map(function (f) {
           return (
             <div className="fb-field" key={f.key} style={{ marginBottom: '1.1rem' }}>
               <label className="fb-label">{f.label}</label>
@@ -492,14 +470,6 @@ function RatingsStep({ form, set, error, submitting, onSubmit, onBack }) {
 
       <button className="fb-btn" onClick={onSubmit} disabled={submitting}>
         {submitting ? 'Submitting…' : 'Submit Feedback'}
-      </button>
-      <button
-        className="fb-btn-ghost"
-        style={{ width: '100%', marginTop: '0.75rem' }}
-        onClick={onBack}
-        disabled={submitting}
-      >
-        ← Back
       </button>
     </>
   );
