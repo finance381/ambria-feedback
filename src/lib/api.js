@@ -174,3 +174,23 @@ export async function updateUser(payload) {
 export async function resetPassword(username, newPassword) {
   return callAdminFunction('resetPassword', { username: username, newPassword: newPassword })
 }
+// ===== Duplicate Detection =====
+
+export async function checkDuplicateGuest(mobile) {
+  var { data, error } = await supabase.rpc('check_duplicate_guest', { p_mobile: mobile })
+  if (error) throw new Error(error.message)
+  return data === true
+}
+
+// ===== Sales Stats =====
+
+export async function getSalesReviewCount() {
+  var { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  var { count, error } = await supabase
+    .from('reviews')
+    .select('id', { count: 'exact', head: true })
+    .eq('sales_user_id', user.id)
+  if (error) throw new Error(error.message)
+  return count || 0
+}

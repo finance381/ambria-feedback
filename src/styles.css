@@ -693,6 +693,46 @@ input, select, textarea { font-family: inherit; }
   letter-spacing: 0.02em;
   text-align: left;
 }
+/* Analytics stat cards */
+.fb-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.fb-stat-card {
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  background: #faf7f2;
+  border: 1px solid #e8e2d5;
+  border-radius: 4px;
+}
+
+.fb-stat-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #b8923d;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.fb-stat-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a7f71;
+}
+
+/* Sales capture stat */
+.fb-capture-stat {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #b8923d;
+  letter-spacing: 0.08em;
+}
 
 /* Small screen tweaks */
 @media (max-width: 640px) {
@@ -700,7 +740,8 @@ input, select, textarea { font-family: inherit; }
   .fb-admin-body { padding: 1rem; }
   .fb-admin-tabs { padding: 0 0.5rem; overflow-x: auto; }
   .fb-admin-tab { padding: 0.85rem 0.9rem; font-size: 0.65rem; }
-  .fb-rating-grid { grid-template-columns: 1fr; }
+  .fb-stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .fb-stat-grid .fb-stat-card:last-child { grid-column: span 2; }
   .fb-admin-topbar { padding: 0.85rem 1rem; }
   .fb-panel { padding: 1.15rem; }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { submitReview, listVenues } from '../../lib/api';
+import { submitReview, listVenues, checkDuplicateGuest } from '../../lib/api';
 import { navigate } from '../../lib/router';
 import { useKioskLock } from '../../hooks/useKioskLock';
 import StarRating from '../../components/StarRating';
@@ -41,6 +41,7 @@ export default function GuestForm({ session }) {
     remarks: '',
   });
   var [showCancel, setShowCancel] = useState(false);
+  var [showDuplicate, setShowDuplicate] = useState(false);
 
   useEffect(function () {
     // Already cached from login bundle? skip the fetch
@@ -70,7 +71,7 @@ export default function GuestForm({ session }) {
     setForm(Object.assign({}, form, Object.fromEntries([[key, value]])));
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (!form.guestName.trim() || !form.guestMobile.trim()) {
       setError('Name and mobile are required');
       return;
@@ -84,6 +85,21 @@ export default function GuestForm({ session }) {
       return;
     }
     setError('');
+    try {
+      var isDup = await checkDuplicateGuest(form.guestMobile.trim());
+      if (isDup) {
+        setShowDuplicate(true);
+        return;
+      }
+    } catch (e) {
+      // Non-blocking — if RPC fails, let them proceed
+      console.log('Duplicate check failed:', e.message);
+    }
+    setStep('ratings');
+  }
+
+  function handleDuplicateContinue() {
+    setShowDuplicate(false);
     setStep('ratings');
   }
 
@@ -117,6 +133,24 @@ export default function GuestForm({ session }) {
           <button className="fb-btn-ghost" onClick={function () { setShowCancel(true); }}>
             Cancel
           </button>
+        </div>
+      )}
+      {showDuplicate && (
+        <div className="fb-modal-backdrop" onClick={function () { setShowDuplicate(false); }}>
+          <div className="fb-modal" onClick={function (e) { e.stopPropagation(); }}>
+            <h3 className="fb-heading" style={{ marginBottom: '0.5rem' }}>Duplicate Guest</h3>
+            <p className="fb-muted" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              This mobile number has already submitted feedback in the last 24 hours
+            </p>
+            <div className="fb-inline-row" style={{ justifyContent: 'center' }}>
+              <button className="fb-btn-ghost" onClick={function () { setShowDuplicate(false); }}>
+                Go Back
+              </button>
+              <button className="fb-btn fb-btn-inline" onClick={handleDuplicateContinue}>
+                Continue Anyway
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

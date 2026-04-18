@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ReviewsTab from './ReviewsTab';
 import VenuesTab from './VenuesTab';
 import UsersTab from './UsersTab';
+import AnalyticsTab from './AnalyticsTab';
 
 export default function AdminShell({ session, onLogout }) {
   var [tab, setTab] = useState('reviews');
@@ -29,12 +30,17 @@ export default function AdminShell({ session, onLogout }) {
           className={'fb-admin-tab ' + (tab === 'users' ? 'active' : '')}
           onClick={function () { setTab('users'); }}
         >Users</button>
+        <button
+          className={'fb-admin-tab ' + (tab === 'analytics' ? 'active' : '')}
+          onClick={function () { setTab('analytics'); }}
+        >Analytics</button>
       </div>
 
       <div className="fb-admin-body">
         {tab === 'reviews' && <ReviewsTab session={session} />}
         {tab === 'venues' && <VenuesTab session={session} />}
         {tab === 'users' && <UsersTab session={session} />}
+        {tab === 'analytics' && <AnalyticsTab session={session} />}
       </div>
     </div>
   );
