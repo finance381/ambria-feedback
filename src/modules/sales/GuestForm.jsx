@@ -145,7 +145,7 @@ export default function GuestForm() {
   var stepIndex = step === 'details' ? 0 : step === 'ratings' ? 1 : 2;
 
   return (
-    <div className="fb-root">
+    <div className="fb-capture-root" style={{ flexDirection: 'column' }}>
       {step !== 'thankyou' && (
         <div className="fb-capture-corner">
           <button className="fb-btn-ghost" onClick={function () { setShowCancel(true); }}>
@@ -153,6 +153,11 @@ export default function GuestForm() {
           </button>
         </div>
       )}
+
+      <div className="fb-logo" style={{ marginBottom: '1rem' }}>
+        <span className="fb-logo-main">Ambria</span>
+        <span className="fb-logo-sub">Cuisines &nbsp;·&nbsp; Event Dining</span>
+      </div>
       {showDuplicate && (
         <div className="fb-modal-backdrop" onClick={function () { setShowDuplicate(false); }}>
           <div className="fb-modal" onClick={function (e) { e.stopPropagation(); }}>
@@ -191,12 +196,7 @@ export default function GuestForm() {
         </div>
       )}
 
-      <div className="fb-card">
-        <div className="fb-logo">
-          <span className="fb-logo-main">Ambria</span>
-          <span className="fb-logo-sub">Cuisines &nbsp;·&nbsp; Event Dining</span>
-        </div>
-
+      <div className="fb-guest-card">
         <div className="fb-step-indicator">
           {[0, 1, 2].map(function (i) {
             return <div key={i} className={'fb-step-dot ' + (i <= stepIndex ? 'active' : '')} />;
@@ -259,7 +259,7 @@ function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearc
     canvas.width = rect.width * 2;
     canvas.height = rect.height * 2;
     ctx.scale(2, 2);
-    ctx.strokeStyle = '#c9a84c';
+    ctx.strokeStyle = '#2a2520';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
