@@ -49,11 +49,9 @@ export async function logout() {
 // ===== Reviews =====
 
 export async function submitReview(fields) {
-  var { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
   var row = {
-    sales_user_id: user.id,
+    sales_person_name: fields.salesPerson,
+    signature: fields.signature,
     guest_name: fields.guestName,
     guest_mobile: fields.guestMobile,
     guest_email: fields.guestEmail || null,
@@ -74,7 +72,7 @@ export async function listReviews() {
   // Admin RLS lets us see all; joined sales profile for display
   var { data, error } = await supabase
     .from('reviews')
-    .select('id, created_at, guest_name, guest_mobile, guest_email, event_date, function_location, food, beverage, service, overall, remarks, profiles(username, display_name)')
+    .select('id, created_at, guest_name, guest_mobile, guest_email, event_date, function_location, food, beverage, service, overall, remarks, sales_person_name, signature, profiles(username, display_name)')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -83,8 +81,9 @@ export async function listReviews() {
   var reviews = (data || []).map(function (r) {
     return {
       timestamp: r.created_at,
-      salesUser: r.profiles ? r.profiles.username : '',
-      salesDisplayName: r.profiles ? r.profiles.display_name : '',
+      salesUser: r.sales_person_name || (r.profiles ? r.profiles.display_name : '') || '',
+      salesDisplayName: r.sales_person_name || (r.profiles ? r.profiles.display_name : '') || '',
+      signature: r.signature || '',
       guestName: r.guest_name,
       guestMobile: r.guest_mobile,
       guestEmail: r.guest_email || '',
@@ -98,6 +97,45 @@ export async function listReviews() {
     }
   })
   return { reviews: reviews }
+}
+// ===== Sales People =====
+
+export async function listSalesPeople() {
+  var { data, error } = await supabase
+    .from('sales_people')
+    .select('id, name, active')
+    .order('name')
+  if (error) throw new Error(error.message)
+  return { people: data || [] }
+}
+
+export async function listActiveSalesPeople() {
+  var { data, error } = await supabase
+    .from('sales_people')
+    .select('id, name')
+    .eq('active', true)
+    .order('name')
+  if (error) throw new Error(error.message)
+  return { people: data || [] }
+}
+
+export async function addSalesPerson(name) {
+  var trimmed = String(name).trim()
+  if (!trimmed) throw new Error('Name is required')
+  var { error } = await supabase.from('sales_people').insert({ name: trimmed, active: true })
+  if (error) {
+    if (String(error.message).toLowerCase().indexOf('duplicate') !== -1) {
+      throw new Error('This person already exists')
+    }
+    throw new Error(error.message)
+  }
+  return { ok: true }
+}
+
+export async function updateSalesPerson(id, updates) {
+  var { error } = await supabase.from('sales_people').update(updates).eq('id', id)
+  if (error) throw new Error(error.message)
+  return { ok: true }
 }
 
 // ===== Venues =====
@@ -184,13 +222,12 @@ export async function checkDuplicateGuest(mobile) {
 
 // ===== Sales Stats =====
 
-export async function getSalesReviewCount() {
-  var { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+export async function getSalesReviewCount(salesPersonName) {
+  if (!salesPersonName) return 0
   var { count, error } = await supabase
     .from('reviews')
     .select('id', { count: 'exact', head: true })
-    .eq('sales_user_id', user.id)
+    .eq('sales_person_name', salesPersonName)
   if (error) throw new Error(error.message)
   return count || 0
 }

@@ -1,24 +1,8 @@
-import { useEffect, useState } from 'react';
 import { navigate } from '../../lib/router';
-import { getSalesReviewCount } from '../../lib/api';
 
-export default function CaptureIntro({ session, onLogout }) {
-  var [reviewCount, setReviewCount] = useState(null);
-
-  useEffect(function () {
-    getSalesReviewCount().then(function (count) {
-      setReviewCount(count);
-    }).catch(function () {
-      setReviewCount(null);
-    });
-  }, []);
-
+export default function CaptureIntro() {
   return (
     <div className="fb-capture-root">
-      <div className="fb-capture-corner">
-        <button className="fb-btn-ghost" onClick={onLogout}>Log Out</button>
-      </div>
-
       <div className="fb-capture-hero">
         <div className="fb-logo">
           <span className="fb-logo-main">Ambria</span>
@@ -41,15 +25,6 @@ export default function CaptureIntro({ session, onLogout }) {
         >
           Start Review
         </button>
-
-        <p className="fb-muted" style={{ marginTop: '2.5rem', fontSize: '0.65rem' }}>
-          Logged in as {session.displayName}
-        </p>
-        {reviewCount !== null && (
-          <p className="fb-capture-stat">
-            {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'} collected
-          </p>
-        )}
       </div>
     </div>
   );

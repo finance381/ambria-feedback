@@ -3,6 +3,7 @@ import ReviewsTab from './ReviewsTab';
 import VenuesTab from './VenuesTab';
 import UsersTab from './UsersTab';
 import AnalyticsTab from './AnalyticsTab';
+import SalesTeamTab from './SalesTeamTab';
 
 export default function AdminShell({ session, onLogout }) {
   var [tab, setTab] = useState('reviews');
@@ -34,6 +35,10 @@ export default function AdminShell({ session, onLogout }) {
           className={'fb-admin-tab ' + (tab === 'analytics' ? 'active' : '')}
           onClick={function () { setTab('analytics'); }}
         >Analytics</button>
+        <button
+          className={'fb-admin-tab ' + (tab === 'salesteam' ? 'active' : '')}
+          onClick={function () { setTab('salesteam'); }}
+        >Sales Team</button>
       </div>
 
       <div className="fb-admin-body">
@@ -41,6 +46,7 @@ export default function AdminShell({ session, onLogout }) {
         {tab === 'venues' && <VenuesTab session={session} />}
         {tab === 'users' && <UsersTab session={session} />}
         {tab === 'analytics' && <AnalyticsTab session={session} />}
+        {tab === 'salesteam' && <SalesTeamTab session={session} />}
       </div>
     </div>
   );

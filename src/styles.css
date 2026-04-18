@@ -746,6 +746,64 @@ input, select, textarea { font-family: inherit; }
   accent-color: #b8923d;
   cursor: pointer;
 }
+/* Search dropdown */
+.fb-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #1a1612;
+  border: 1px solid rgba(180, 140, 60, 0.3);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 30;
+}
+
+.fb-dropdown-item {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  color: #e8dcc8;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fb-dropdown-item:hover,
+.fb-dropdown-item.active {
+  background: rgba(201, 168, 76, 0.12);
+}
+
+/* Light theme dropdown (admin) */
+.fb-admin-shell .fb-dropdown,
+.fb-capture-root .fb-dropdown {
+  background: #ffffff;
+  border-color: #d4ccbc;
+}
+
+.fb-admin-shell .fb-dropdown-item,
+.fb-capture-root .fb-dropdown-item {
+  color: #2a2520;
+}
+
+.fb-admin-shell .fb-dropdown-item:hover,
+.fb-admin-shell .fb-dropdown-item.active,
+.fb-capture-root .fb-dropdown-item:hover,
+.fb-capture-root .fb-dropdown-item.active {
+  background: #faf7f2;
+}
+
+/* Signature canvas */
+.fb-sig-canvas {
+  width: 100%;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(180, 140, 60, 0.2);
+  border-radius: 2px;
+  cursor: crosshair;
+  touch-action: none;
+  margin-top: 0.5rem;
+}
 
 /* Sales capture stat */
 .fb-capture-stat {

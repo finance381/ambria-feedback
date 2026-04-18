@@ -12,7 +12,7 @@ function todayISO() {
   return y + '-' + m + '-' + day;
 }
 
-export default function GuestForm({ session }) {
+export default function GuestForm() {
   useKioskLock(true);
 
   var [step, setStep] = useState('details'); // details | ratings | thankyou
@@ -28,7 +28,13 @@ export default function GuestForm({ session }) {
   var [error, setError] = useState('');
   var [submitting, setSubmitting] = useState(false);
 
+  var [salesPeople, setSalesPeople] = useState([]);
+  var [salesSearch, setSalesSearch] = useState('');
+  var [salesOpen, setSalesOpen] = useState(false);
+
   var [form, setForm] = useState({
+    salesPerson: '',
+    signature: '',
     guestName: '',
     guestMobile: '',
     guestEmail: '',
@@ -44,7 +50,11 @@ export default function GuestForm({ session }) {
   var [showDuplicate, setShowDuplicate] = useState(false);
 
   useEffect(function () {
-    // Already cached from login bundle? skip the fetch
+    listActiveSalesPeople().then(function (res) {
+      setSalesPeople(res.people || []);
+    }).catch(function () {});
+
+    // Already cached? skip the fetch
     if (venues.length > 0) {
       setLoadingVenues(false);
       return;
@@ -72,6 +82,14 @@ export default function GuestForm({ session }) {
   }
 
   async function handleNext() {
+    if (!form.salesPerson) {
+      setError('Please select a sales person');
+      return;
+    }
+    if (!form.signature) {
+      setError('Sales person signature is required');
+      return;
+    }
     if (!form.guestName.trim() || !form.guestMobile.trim()) {
       setError('Name and mobile are required');
       return;
@@ -191,6 +209,11 @@ export default function GuestForm({ session }) {
             set={set}
             venues={venues}
             loadingVenues={loadingVenues}
+            salesPeople={salesPeople}
+            salesSearch={salesSearch}
+            setSalesSearch={setSalesSearch}
+            salesOpen={salesOpen}
+            setSalesOpen={setSalesOpen}
             error={error}
             onNext={handleNext}
           />
@@ -213,12 +236,135 @@ export default function GuestForm({ session }) {
   );
 }
 
-function DetailsStep({ form, set, venues, loadingVenues, error, onNext }) {
+function DetailsStep({ form, set, venues, loadingVenues, salesPeople, salesSearch, setSalesSearch, salesOpen, setSalesOpen, error, onNext }) {
+  var sigCanvasRef = useRef(null);
+  var isDrawingRef = useRef(false);
+
+  var filteredSales = salesPeople.filter(function (p) {
+    if (!salesSearch.trim()) return true;
+    return p.name.toLowerCase().indexOf(salesSearch.trim().toLowerCase()) !== -1;
+  });
+
+  function selectSalesPerson(name) {
+    set('salesPerson', name);
+    setSalesSearch(name);
+    setSalesOpen(false);
+  }
+
+  function initCanvas(canvas) {
+    if (!canvas) return;
+    sigCanvasRef.current = canvas;
+    var ctx = canvas.getContext('2d');
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = rect.height * 2;
+    ctx.scale(2, 2);
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+
+  function getPos(e) {
+    var canvas = sigCanvasRef.current;
+    var rect = canvas.getBoundingClientRect();
+    var touch = e.touches ? e.touches[0] : e;
+    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    isDrawingRef.current = true;
+    var ctx = sigCanvasRef.current.getContext('2d');
+    var pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  }
+
+  function draw(e) {
+    if (!isDrawingRef.current) return;
+    e.preventDefault();
+    var ctx = sigCanvasRef.current.getContext('2d');
+    var pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+
+  function endDraw() {
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+    var dataUrl = sigCanvasRef.current.toDataURL('image/png');
+    set('signature', dataUrl);
+  }
+
+  function clearSig() {
+    var canvas = sigCanvasRef.current;
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    set('signature', '');
+  }
+
   return (
     <>
       <h2 className="fb-heading">Guest Details</h2>
       <p className="fb-subheading">A warm welcome to you</p>
       <div className="fb-divider"><div className="fb-divider-line" /><div className="fb-divider-diamond" /><div className="fb-divider-line" /></div>
+
+      <div className="fb-field" style={{ position: 'relative' }}>
+        <label className="fb-label">Sales Person</label>
+        <input
+          className="fb-input"
+          placeholder="Search by name…"
+          value={salesSearch}
+          onChange={function (e) {
+            setSalesSearch(e.target.value);
+            setSalesOpen(true);
+            if (!e.target.value.trim()) set('salesPerson', '');
+          }}
+          onFocus={function () { setSalesOpen(true); }}
+        />
+        {salesOpen && filteredSales.length > 0 && (
+          <div className="fb-dropdown">
+            {filteredSales.map(function (p) {
+              return (
+                <div
+                  key={p.id}
+                  className={'fb-dropdown-item' + (form.salesPerson === p.name ? ' active' : '')}
+                  onClick={function () { selectSalesPerson(p.name); }}
+                >
+                  {p.name}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {salesOpen && salesSearch.trim() && filteredSales.length === 0 && (
+          <div className="fb-dropdown">
+            <div className="fb-dropdown-item fb-muted" style={{ cursor: 'default' }}>No match found</div>
+          </div>
+        )}
+      </div>
+
+      <div className="fb-field">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <label className="fb-label" style={{ marginBottom: 0 }}>Signature</label>
+          {form.signature && (
+            <button className="fb-btn-ghost" style={{ padding: '0.2rem 0.6rem', fontSize: '0.55rem' }} onClick={clearSig}>Clear</button>
+          )}
+        </div>
+        <canvas
+          className="fb-sig-canvas"
+          ref={initCanvas}
+          onMouseDown={startDraw}
+          onMouseMove={draw}
+          onMouseUp={endDraw}
+          onMouseLeave={endDraw}
+          onTouchStart={startDraw}
+          onTouchMove={draw}
+          onTouchEnd={endDraw}
+        />
+      </div>
 
       <div className="fb-field">
         <label className="fb-label">Full Name</label>

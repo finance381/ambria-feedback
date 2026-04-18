@@ -10,28 +10,23 @@ export default function App() {
   var { session, saveSession, logout, loading } = useAuth();
   var route = useHashRoute();
 
-  // Route guard — redirect based on auth + role
+  // Route guard — admin routes need auth, sales routes are public
   useEffect(function () {
-    // Not logged in → force to login (unless already there)
-    if (!session) {
-      if (route !== '/login' && route !== '/') navigate('/login');
+    if (route === '/admin' && !session) {
+      navigate('/login');
       return;
     }
-
-    // Logged in but on login screen → send to their home
-    if (route === '/login' || route === '/') {
-      navigate(session.role === 'admin' ? '/admin' : '/capture');
-      return;
-    }
-
-    // Role-based access
-    if (route === '/admin' && session.role !== 'admin') {
-      navigate('/capture');
-      return;
-    }
-    if ((route === '/capture' || route === '/guest') && session.role !== 'sales') {
+    if (route === '/login' && session && session.role === 'admin') {
       navigate('/admin');
       return;
+    }
+    // Default landing goes to capture
+    if (route === '/' || route === '/login') {
+      if (session && session.role === 'admin') {
+        navigate('/admin');
+      } else if (route === '/') {
+        navigate('/capture');
+      }
     }
   }, [session, route]);
 
@@ -40,23 +35,17 @@ export default function App() {
     navigate('/login');
   }
 
-  // Avoid flashing login on page refresh while auth state hydrates
   if (loading) return null;
 
-  // Render by route
-  if (!session || route === '/login' || route === '/') {
-    return <LoginScreen onLogin={saveSession} />;
-  }
+  // Public routes — no auth needed
+  if (route === '/capture') return <CaptureIntro />;
+  if (route === '/guest') return <GuestForm />;
 
-  if (session.role === 'sales') {
-    if (route === '/guest') return <GuestForm session={session} />;
-    return <CaptureIntro session={session} onLogout={handleLogout} />;
-  }
-
-  if (session.role === 'admin') {
+  // Admin — auth required
+  if (route === '/admin' && session && session.role === 'admin') {
     return <AdminShell session={session} onLogout={handleLogout} />;
   }
 
-  // Fallback
+  // Login screen (for admin access only)
   return <LoginScreen onLogin={saveSession} />;
 }
