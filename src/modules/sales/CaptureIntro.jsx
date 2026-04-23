@@ -3,6 +3,9 @@ import { navigate } from '../../lib/router';
 export default function CaptureIntro() {
   return (
     <div className="fb-capture-root">
+      <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+        <a href="/" style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.5)', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>⌂ Hub</a>
+      </div>
       <div className="fb-capture-hero">
         <div className="fb-logo">
           <span className="fb-logo-main">Ambria</span>

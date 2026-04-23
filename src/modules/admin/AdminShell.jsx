@@ -13,6 +13,7 @@ export default function AdminShell({ session, onLogout }) {
       <div className="fb-admin-topbar">
         <div className="fb-admin-brand">Ambria · Admin</div>
         <div className="fb-inline-row">
+          <a href="/" style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,.1)', color: 'rgba(0,0,0,.4)', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>⌂ Hub</a>
           <span className="fb-admin-user">{session.displayName}</span>
           <button className="fb-btn-ghost" onClick={onLogout}>Log Out</button>
         </div>
