@@ -744,6 +744,130 @@ input, select, textarea { font-family: inherit; }
   text-transform: uppercase;
   color: #8a7f71;
 }
+/* Analytics charts */
+.fb-chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .fb-chart-row { grid-template-columns: 1fr; }
+}
+
+.fb-dist-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.fb-dist-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b6258;
+  width: 56px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.fb-dist-track {
+  flex: 1;
+  height: 20px;
+  background: #f0ebe0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fb-dist-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  min-width: 0;
+}
+
+.fb-dist-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #2a2520;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.fb-month-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 180px;
+  padding: 1rem 0 0;
+  border-bottom: 1px solid #e8e2d5;
+}
+
+.fb-month-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.fb-month-count {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #2a2520;
+  margin-bottom: 0.25rem;
+}
+
+.fb-month-bar {
+  width: 70%;
+  max-width: 44px;
+  background: linear-gradient(180deg, #b8923d, #d4b155);
+  border-radius: 3px 3px 0 0;
+  transition: height 0.4s ease;
+  min-height: 4px;
+}
+
+.fb-month-meta {
+  text-align: center;
+  padding-top: 0.4rem;
+}
+
+.fb-month-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: #8a7f71;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fb-month-avg {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: #b8923d;
+}
+
+.fb-count-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fb-count-bar-track {
+  width: 60px;
+  height: 6px;
+  background: #f0ebe0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fb-count-bar-fill {
+  height: 100%;
+  background: #b8923d;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
 /* Export column picker */
 .fb-export-grid {
   display: grid;

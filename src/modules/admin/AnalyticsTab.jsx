@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listReviews } from '../../lib/api';
-import { StarDisplay } from '../../components/StarRating';
 
 function avgRound(arr) {
   if (!arr.length) return 0;
@@ -103,6 +102,25 @@ export default function AnalyticsTab({ session }) {
     }).slice().sort(function (a, b) { return b.count - a.count; });
   }, [reviews]);
 
+  var ratingDist = useMemo(function () {
+    var buckets = [
+      { label: '5 ★', min: 5, count: 0, color: '#4a7a4a' },
+      { label: '4–4.5', min: 4, count: 0, color: '#6b9a3d' },
+      { label: '3–3.5', min: 3, count: 0, color: '#b8923d' },
+      { label: '2–2.5', min: 2, count: 0, color: '#c07a4a' },
+      { label: '≤ 1.5', min: 0, count: 0, color: '#b8533a' },
+    ];
+    reviews.forEach(function (r) {
+      var v = Number(r.overall) || 0;
+      if (v >= 5) buckets[0].count++;
+      else if (v >= 4) buckets[1].count++;
+      else if (v >= 3) buckets[2].count++;
+      else if (v >= 2) buckets[3].count++;
+      else buckets[4].count++;
+    });
+    return buckets;
+  }, [reviews]);
+
   var byMonth = useMemo(function () {
     var map = {};
     var order = [];
@@ -135,6 +153,18 @@ export default function AnalyticsTab({ session }) {
   if (error) return <div className="fb-panel"><p className="fb-error" style={{ textAlign: 'left' }}>{error}</p></div>;
   if (!summary) return <div className="fb-panel"><p className="fb-muted">No reviews yet</p></div>;
 
+  var maxMonthCount = 1;
+  byMonth.forEach(function (m) { if (m.count > maxMonthCount) maxMonthCount = m.count; });
+
+  var maxDistCount = 1;
+  ratingDist.forEach(function (b) { if (b.count > maxDistCount) maxDistCount = b.count; });
+
+  var maxSalesCount = 1;
+  bySales.forEach(function (s) { if (s.count > maxSalesCount) maxSalesCount = s.count; });
+
+  var maxVenueCount = 1;
+  byVenue.forEach(function (v) { if (v.count > maxVenueCount) maxVenueCount = v.count; });
+
   return (
     <>
       <div className="fb-panel">
@@ -163,6 +193,53 @@ export default function AnalyticsTab({ session }) {
         </div>
       </div>
 
+      <div className="fb-chart-row">
+        <div className="fb-panel">
+          <div className="fb-panel-title">Rating Distribution (Overall)</div>
+          {ratingDist.map(function (b) {
+            return (
+              <div className="fb-dist-row" key={b.label}>
+                <div className="fb-dist-label">{b.label}</div>
+                <div className="fb-dist-track">
+                  <div className="fb-dist-fill" style={{ width: (b.count ? (b.count / maxDistCount * 100) : 0) + '%', background: b.color }} />
+                </div>
+                <div className="fb-dist-count">{b.count}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="fb-panel">
+          <div className="fb-panel-title">Monthly Trend</div>
+          {byMonth.length > 0 && (
+            <>
+              <div className="fb-month-chart">
+                {byMonth.map(function (m) {
+                  var pct = (m.count / maxMonthCount * 100);
+                  return (
+                    <div className="fb-month-col" key={m.name}>
+                      <div className="fb-month-count">{m.count}</div>
+                      <div className="fb-month-bar" style={{ height: pct + '%' }} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginTop: '0' }}>
+                {byMonth.map(function (m) {
+                  return (
+                    <div className="fb-month-meta" key={m.name} style={{ flex: 1 }}>
+                      <div className="fb-month-label">{m.name.split(' ')[0]}</div>
+                      <div className="fb-month-avg">★ {m.overall}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+          {byMonth.length === 0 && <p className="fb-muted">No data yet</p>}
+        </div>
+      </div>
+
       <div className="fb-panel">
         <div className="fb-panel-title">By Sales User</div>
         <div className="fb-table-wrap">
@@ -182,11 +259,18 @@ export default function AnalyticsTab({ session }) {
                 return (
                   <tr key={row.name}>
                     <td>{row.name}</td>
-                    <td>{row.count}</td>
-                    <td><StarDisplay value={row.food} /></td>
-                    <td><StarDisplay value={row.beverage} /></td>
-                    <td><StarDisplay value={row.service} /></td>
-                    <td><StarDisplay value={row.overall} /></td>
+                    <td>
+                      <div className="fb-count-bar-wrap">
+                        <span>{row.count}</span>
+                        <div className="fb-count-bar-track">
+                          <div className="fb-count-bar-fill" style={{ width: (row.count / maxSalesCount * 100) + '%' }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.food}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.beverage}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.service}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.overall}</span></td>
                   </tr>
                 );
               })}
@@ -214,11 +298,18 @@ export default function AnalyticsTab({ session }) {
                 return (
                   <tr key={row.name}>
                     <td>{row.name}</td>
-                    <td>{row.count}</td>
-                    <td><StarDisplay value={row.food} /></td>
-                    <td><StarDisplay value={row.beverage} /></td>
-                    <td><StarDisplay value={row.service} /></td>
-                    <td><StarDisplay value={row.overall} /></td>
+                    <td>
+                      <div className="fb-count-bar-wrap">
+                        <span>{row.count}</span>
+                        <div className="fb-count-bar-track">
+                          <div className="fb-count-bar-fill" style={{ width: (row.count / maxVenueCount * 100) + '%' }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.food}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.beverage}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.service}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.overall}</span></td>
                   </tr>
                 );
               })}
@@ -247,10 +338,10 @@ export default function AnalyticsTab({ session }) {
                   <tr key={row.name}>
                     <td>{row.name}</td>
                     <td>{row.count}</td>
-                    <td><StarDisplay value={row.food} /></td>
-                    <td><StarDisplay value={row.beverage} /></td>
-                    <td><StarDisplay value={row.service} /></td>
-                    <td><StarDisplay value={row.overall} /></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.food}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.beverage}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.service}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {row.overall}</span></td>
                   </tr>
                 );
               })}
