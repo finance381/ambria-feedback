@@ -449,9 +449,9 @@ input, select, textarea { font-family: inherit; }
 }
 /* Tables */
 .fb-table-wrap { overflow-x: auto; margin: -0.5rem; padding: 0.5rem; }
-.fb-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: 'Jost', sans-serif; }
+.fb-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: 'Jost', sans-serif; }
 .fb-table th, .fb-table td {
-  padding: 0.75rem 0.9rem;
+  padding: 0.55rem 0.6rem;
   text-align: left;
   border-bottom: 1px solid #f0ebe0;
   white-space: nowrap;
@@ -469,6 +469,20 @@ input, select, textarea { font-family: inherit; }
 .fb-table tr:hover td { background: #faf7f2; }
 .fb-table tbody tr:last-child td { border-bottom: none; }
 
+/* Compact rating cell */
+.fb-rating-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: #2a2520;
+}
+.fb-rating-cell .fb-star {
+  color: #b8923d;
+  font-size: 0.7rem;
+}
+
 .fb-pill {
   display: inline-block;
   padding: 0.2rem 0.55rem;
@@ -485,13 +499,19 @@ input, select, textarea { font-family: inherit; }
 .fb-pill-sales { color: #6b6258; border-color: #d4ccbc; background: #f5f1e8; }
 
 .fb-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 140px 140px 120px 1fr;
+  gap: 0.75rem;
   margin-bottom: 1rem;
-  align-items: flex-end;
+  align-items: end;
 }
-.fb-filter-row .fb-field { margin-bottom: 0; flex: 1 1 180px; }
+.fb-filter-row .fb-field { margin-bottom: 0; }
+
+@media (max-width: 900px) {
+  .fb-filter-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
 /* Light theme form controls — override dark when inside staff contexts */
 .fb-admin-shell .fb-label,

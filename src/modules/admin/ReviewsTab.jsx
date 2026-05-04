@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listReviews } from '../../lib/api';
-import { StarDisplay } from '../../components/StarRating';
 
 function formatTimestamp(iso) {
   if (!iso) return '';
   try {
     var d = new Date(iso);
     if (isNaN(d.getTime())) return String(iso);
-    return d.toLocaleString();
+    var dd = d.getDate();
+    var mm = d.toLocaleString('en', { month: 'short' });
+    var hh = d.getHours();
+    var min = String(d.getMinutes()).padStart(2, '0');
+    var ampm = hh >= 12 ? 'PM' : 'AM';
+    hh = hh % 12 || 12;
+    return dd + ' ' + mm + ', ' + hh + ':' + min + ' ' + ampm;
   } catch (e) { return String(iso); }
 }
 
@@ -305,10 +310,10 @@ export default function ReviewsTab({ session }) {
                     <td>{r.guestMobile}</td>
                     <td>{formatEventDate(r.eventDate)}</td>
                     <td>{r.functionLocation}</td>
-                    <td><StarDisplay value={r.food} /></td>
-                    <td><StarDisplay value={r.beverage} /></td>
-                    <td><StarDisplay value={r.service} /></td>
-                    <td><StarDisplay value={r.overall} /></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {r.food}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {r.beverage}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {r.service}</span></td>
+                    <td><span className="fb-rating-cell"><span className="fb-star">★</span> {r.overall}</span></td>
                     <td style={{ whiteSpace: 'normal', maxWidth: '280px' }}>{r.remarks}</td>
                   </tr>
                 );
