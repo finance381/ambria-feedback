@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listReviews } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 
 function formatTimestamp(iso) {
   if (!iso) return '';
@@ -57,10 +58,12 @@ export default function ReviewsTab({ session }) {
 
   useEffect(function () {
     loadReviews();
-    var interval = setInterval(function () {
-      loadReviews();
-    }, 30000);
-    return function () { clearInterval(interval); };
+    var channel = supabase.channel('reviews-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, function () {
+        loadReviews();
+      })
+      .subscribe();
+    return function () { supabase.removeChannel(channel); };
   }, []);
 
   async function loadReviews() {
