@@ -214,8 +214,8 @@ export async function resetPassword(username, newPassword) {
 }
 // ===== Duplicate Detection =====
 
-export async function checkDuplicateGuest(mobile) {
-  var { data, error } = await supabase.rpc('check_duplicate_guest', { p_mobile: mobile })
+export async function checkDuplicateGuest(salesPerson, guestName) {
+  var { data, error } = await supabase.rpc('check_duplicate_guest', { p_sales_person: salesPerson, p_guest_name: guestName })
   if (error) throw new Error(error.message)
   return data === true
 }

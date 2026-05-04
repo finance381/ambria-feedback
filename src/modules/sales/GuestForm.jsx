@@ -27,6 +27,7 @@ export default function GuestForm() {
   });
   var [error, setError] = useState('');
   var [submitting, setSubmitting] = useState(false);
+  var submitGuardRef = useRef(false);
 
   var [salesPeople, setSalesPeople] = useState([]);
   var [salesSearch, setSalesSearch] = useState('');
@@ -87,6 +88,7 @@ export default function GuestForm() {
   }
 
   async function handleSubmit() {
+    if (submitGuardRef.current) return;
     if (!form.salesPerson) {
       setError('Please select a sales person');
       return;
@@ -113,7 +115,7 @@ export default function GuestForm() {
     }
     setError('');
     try {
-      var isDup = await checkDuplicateGuest(form.guestMobile.trim());
+      var isDup = await checkDuplicateGuest(form.salesPerson, form.guestName.trim());
       if (isDup) {
         setShowDuplicate(true);
         return;
@@ -125,6 +127,7 @@ export default function GuestForm() {
   }
 
   async function doSubmit() {
+    submitGuardRef.current = true;
     setSubmitting(true);
     setError('');
     try {
@@ -132,6 +135,7 @@ export default function GuestForm() {
       setStep('thankyou');
     } catch (e) {
       setError(e.message || 'Submission failed');
+      submitGuardRef.current = false;
     }
     setSubmitting(false);
   }
